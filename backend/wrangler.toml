@@ -1,0 +1,12 @@
+name = "sjtuaa-backend"
+# 视您采用的 Go-Worker 框架而定 (syumai/worker等)。入口通常为包含 WASM 的 JS。
+main = "build/index.js"
+compatibility_date = "2024-03-27"
+
+[[d1_databases]]
+binding = "DB"
+database_name = "sjtuaa-db"
+database_id = "YOUR_DATABASE_ID_HERE" # TODO: 使用 "wrangler d1 create sjtuaa-db" 后将结果填入此坑位
+
+[build]
+command = "echo 'If needed, replace this with your Go compile command (e.g. go run github.com/syumai/workers/cmd/workers-assets-gen)'"
