@@ -12,4 +12,7 @@ binding = "DB"
 database_name = "sjtuaa-db"
 database_id = "3dd50307-3834-4552-8806-7af21a1ad629"
 
+[build]
+command = "make build"
+
 # We execute build steps explicitly in GitHub Actions / Makefile rather than here.

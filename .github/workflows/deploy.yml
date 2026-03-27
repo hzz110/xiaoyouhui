@@ -27,17 +27,6 @@ jobs:
         with:
           node-version: '20'
 
-      - name: Build Go Project (WASM)
-        run: |
-          mkdir -p build
-          # 下载依赖
-          go mod tidy
-          # 编译 Go 到 WebAssembly
-          GOOS=js GOARCH=wasm go build -o build/app.wasm .
-          # 根据 Wasm 生成 Cloudflare 运行所需的 JS Worker
-          go run github.com/syumai/workers/cmd/workers-assets-gen@latest
-          ls -la build/
-
       - name: Install Wrangler
         run: npm install -g wrangler
 
