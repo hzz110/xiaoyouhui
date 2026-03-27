@@ -36,6 +36,7 @@ jobs:
           GOOS=js GOARCH=wasm go build -o build/app.wasm .
           # 根据 Wasm 生成 Cloudflare 运行所需的 JS Worker
           go run github.com/syumai/workers/cmd/workers-assets-gen@latest
+          ls -la build/
 
       - name: Install Wrangler
         run: npm install -g wrangler
