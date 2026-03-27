@@ -1,0 +1,57 @@
+<view class="container p-4 pb-20">
+  <view class="bg-blue-600 text-white p-6 -mx-4 -mt-4 mb-6 curve-bottom">
+    <view class="text-2xl font-bold mb-1">2026春季校友座谈会</view>
+    <view class="flex justify-between text-sm top-opacity">
+      <text>2026.04.15 14:00</text>
+      <text>学校报告厅</text>
+    </view>
+  </view>
+
+  <view wx:if="{{!signedIn}}" class="text-center">
+    <view class="qr-box mx-auto bg-white border-8 border-gray-200 shadow-inner flex items-center justify-center text-6xl">
+      📱
+    </view>
+    <view class="text-xl font-medium mt-6">扫一扫签到</view>
+    <view class="text-sm text-gray-500 mt-1">或点击下方手动签到</view>
+    
+    <button bindtap="signInSuccess" class="manual-btn mt-8 bg-green-500 text-white py-4 text-lg font-medium flex items-center justify-center gap-2">
+      <text>✅</text> 我已到达现场（手动签到）
+    </button>
+    
+    <view class="mt-8 text-xs text-gray-400">已签到 45 人</view>
+    <view class="flex justify-center gap-1 mt-3">
+      <image src="https://picsum.photos/id/64/64/64" class="avatar-sm"></image>
+      <image src="https://picsum.photos/id/1005/64/64" class="avatar-sm"></image>
+      <image src="https://picsum.photos/id/201/64/64" class="avatar-sm"></image>
+      <view class="text-sm text-gray-400 flex items-center ml-2">+42</view>
+    </view>
+  </view>
+
+  <!-- 签到成功状态 -->
+  <view wx:else class="success-view flex-col items-center justify-center text-white">
+    <view class="text-6xl mb-8 bounce">🎉</view>
+    <view class="text-3xl font-bold">签到成功！</view>
+    <view class="text-xl mt-4">欢迎参加本次校友会</view>
+    <view class="mt-16 text-sm top-opacity">已记录到系统 · 2026.04.15 13:58</view>
+    <navigator url="/pages/index/index" open-type="redirect" class="back-btn mt-12 text-green-600 bg-white font-semibold">返回首页</navigator>
+  </view>
+</view>
+
+<view wx:if="{{!signedIn}}" class="tab-bar">
+  <navigator url="/pages/index/index" open-type="redirect" class="tab-item">
+    <view class="text-2xl">🏠</view>
+    <text>首页</text>
+  </navigator>
+  <navigator url="/pages/activity/activity" open-type="redirect" class="tab-item active">
+    <view class="text-2xl">📅</view>
+    <text>活动</text>
+  </navigator>
+  <navigator url="/pages/alumni/alumni" open-type="redirect" class="tab-item">
+    <view class="text-2xl">👥</view>
+    <text>校友</text>
+  </navigator>
+  <navigator url="/pages/profile/profile" open-type="redirect" class="tab-item">
+    <view class="text-2xl">👤</view>
+    <text>我的</text>
+  </navigator>
+</view>

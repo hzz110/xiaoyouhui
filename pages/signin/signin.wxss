@@ -1,0 +1,43 @@
+.curve-bottom {
+  border-bottom-left-radius: 24px;
+  border-bottom-right-radius: 24px;
+}
+.top-opacity {
+  opacity: 0.9;
+}
+.qr-box {
+  width: 200px;
+  height: 200px;
+  border-radius: 24px;
+  margin: 0 auto;
+}
+.manual-btn {
+  width: 100%;
+  border-radius: 24px;
+}
+.avatar-sm {
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  background-color: #e5e7eb;
+}
+.success-view {
+  position: fixed;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background: linear-gradient(to bottom, #4ade80, #10b981);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 999;
+}
+.bounce {
+  animation: bounce 1s infinite alternate;
+}
+@keyframes bounce {
+  from { transform: translateY(0); }
+  to { transform: translateY(-20px); }
+}
+.back-btn {
+  padding: 16px 40px;
+  border-radius: 24px;
+}

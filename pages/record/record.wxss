@@ -1,0 +1,11 @@
+.grid-4 {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 16px;
+}
+.avatar-lg {
+  width: 56px;
+  height: 56px;
+  border-radius: 16px;
+  background-color: #e5e7eb;
+}

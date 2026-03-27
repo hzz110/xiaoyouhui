@@ -1,0 +1,9 @@
+.avatar-lg {
+  width: 64px;
+  height: 64px;
+  border-radius: 32px;
+  background-color: #e5e7eb;
+}
+.border-b {
+  border-bottom: 1px solid #f3f4f6;
+}

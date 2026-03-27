@@ -1,0 +1,75 @@
+<view class="container p-4 pb-20">
+  <view class="flex justify-between items-center mb-4">
+    <view class="text-xl font-semibold">校友管理</view>
+    <view class="bg-blue-600 text-white px-5 py-2 rounded-full text-sm" bindtap="addAlumni">+ 新增校友</view>
+  </view>
+  
+  <!-- 搜索 -->
+  <view class="bg-white rounded-full px-4 py-3 flex items-center gap-2 border-gray mb-4">
+    <text class="text-xl">🔍</text>
+    <input type="text" placeholder="搜索校友姓名 / 届别 / 城市" class="flex-1 bg-transparent text-base" bindconfirm="filterAlumni" />
+  </view>
+
+  <!-- 筛选 -->
+  <scroll-view scroll-x="true" class="mb-6 whitespace-nowrap">
+    <view class="flex gap-2 pb-2">
+      <view class="filter-chip active">全部校友</view>
+      <view class="filter-chip">2008届</view>
+      <view class="filter-chip">活跃校友</view>
+      <view class="filter-chip">北京</view>
+    </view>
+  </scroll-view>
+
+  <!-- 校友列表 -->
+  <view class="space-y-3">
+    <view class="card p-4 flex items-center gap-4 mb-3">
+      <image class="avatar-md" src="https://picsum.photos/id/64/64/64"></image>
+      <view class="flex-1">
+        <view class="flex justify-between">
+          <view class="flex items-center">
+            <text class="font-medium">张伟</text>
+            <view class="ml-2 text-xs bg-blue-100 text-blue-600 px-2 py-1 rounded">2008届</view>
+          </view>
+          <text class="text-green-500 text-xs">已认证</text>
+        </view>
+        <view class="text-sm text-gray-500 mt-1">计算机科学与技术 · 现居北京</view>
+      </view>
+      <view class="text-blue-600 text-sm" bindtap="viewDetail">详情</view>
+    </view>
+    
+    <view class="card p-4 flex items-center gap-4">
+      <image class="avatar-md" src="https://picsum.photos/id/1005/64/64"></image>
+      <view class="flex-1">
+        <view class="flex justify-between">
+          <view class="flex items-center">
+            <text class="font-medium">李娜</text>
+            <view class="ml-2 text-xs bg-blue-100 text-blue-600 px-2 py-1 rounded">2015届</view>
+          </view>
+          <text class="text-green-500 text-xs">已认证</text>
+        </view>
+        <view class="text-sm text-gray-500 mt-1">金融学 · 现居上海</view>
+      </view>
+      <view class="text-blue-600 text-sm" bindtap="viewDetail">详情</view>
+    </view>
+  </view>
+</view>
+
+<!-- Bottom Tab Bar -->
+<view class="tab-bar">
+  <navigator url="/pages/index/index" open-type="redirect" class="tab-item">
+    <view class="text-2xl">🏠</view>
+    <text>首页</text>
+  </navigator>
+  <navigator url="/pages/activity/activity" open-type="redirect" class="tab-item">
+    <view class="text-2xl">📅</view>
+    <text>活动</text>
+  </navigator>
+  <navigator url="/pages/alumni/alumni" open-type="redirect" class="tab-item active">
+    <view class="text-2xl">👥</view>
+    <text>校友</text>
+  </navigator>
+  <navigator url="/pages/profile/profile" open-type="redirect" class="tab-item">
+    <view class="text-2xl">👤</view>
+    <text>我的</text>
+  </navigator>
+</view>

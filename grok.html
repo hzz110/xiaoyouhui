@@ -1,0 +1,467 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>XX大学校友会 · 小程序演示</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=PingFang+SC:wght@400;500;600&display=swap');
+        
+        * { font-family: 'PingFang SC', system-ui, sans-serif; }
+        
+        /* 手机外框 */
+        .phone-frame {
+            width: 393px;
+            height: 852px;
+            background: #fff;
+            border-radius: 60px;
+            box-shadow: 0 25px 50px -12px rgb(0 0 0 / 0.25);
+            overflow: hidden;
+            border: 12px solid #111;
+            position: relative;
+        }
+        
+        /* 微信小程序状态栏 */
+        .status-bar {
+            height: 44px;
+            background: linear-gradient(to right, #1E88E5, #1565C0);
+            color: white;
+            display: flex;
+            align-items: center;
+            padding: 0 24px;
+            font-size: 12px;
+            position: relative;
+        }
+        
+        .content-area {
+            height: calc(852px - 44px - 49px);
+            overflow-y: auto;
+            -webkit-overflow-scrolling: touch;
+        }
+        
+        /* 底部 TabBar */
+        .tab-bar {
+            height: 49px;
+            border-top: 1px solid #E5E5E5;
+            background: white;
+            display: flex;
+            align-items: center;
+            justify-content: space-around;
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+        }
+        
+        .tab-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            color: #666;
+            font-size: 10px;
+            transition: all 0.2s;
+        }
+        
+        .tab-item.active {
+            color: #1E88E5;
+        }
+        
+        /* 卡片通用样式 */
+        .card {
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 4px 12px rgba(30, 136, 229, 0.1);
+        }
+    </style>
+</head>
+<body class="bg-gray-100 flex items-center justify-center min-h-screen">
+    <div class="phone-frame mx-auto">
+        
+        <!-- 顶部状态栏 -->
+        <div class="status-bar">
+            <div class="flex-1">9:41</div>
+            <div class="flex items-center gap-1">
+                <span>XX大学校友会</span>
+            </div>
+            <div class="flex-1 flex justify-end items-center gap-2">
+                <span>4G</span>
+                <span>92%</span>
+            </div>
+        </div>
+
+        <!-- 页面内容区域 -->
+        <div id="content" class="content-area">
+
+            <!-- ==================== 首页 ==================== -->
+            <div id="page-home" class="page p-4">
+                <div class="flex items-center justify-between mb-4">
+                    <div class="flex items-center gap-2">
+                        <div class="w-8 h-8 bg-blue-600 rounded-xl flex items-center justify-center text-white text-xl">🏫</div>
+                        <h1 class="text-xl font-semibold text-gray-900">XX大学校友会</h1>
+                    </div>
+                    <div class="flex items-center gap-3">
+                        <button onclick="showNotification()" class="w-8 h-8 flex items-center justify-center text-2xl">🛎️</button>
+                        <div class="w-8 h-8 bg-gray-200 rounded-full overflow-hidden">
+                            <img src="https://picsum.photos/id/64/64/64" alt="头像" class="w-full h-full object-cover">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 欢迎 Banner -->
+                <div class="card p-5 mb-6 relative overflow-hidden bg-gradient-to-r from-blue-600 to-blue-500 text-white">
+                    <div class="text-2xl font-bold">欢迎回来，李校友！</div>
+                    <div class="text-blue-100 mt-1">今天是校友会成立 15 周年纪念日 🎉</div>
+                    <div class="absolute -right-4 -bottom-6 text-[120px] opacity-10">🏫</div>
+                </div>
+
+                <!-- 即将会议 -->
+                <div class="mb-6">
+                    <div class="flex justify-between items-baseline mb-3 px-1">
+                        <div class="font-semibold text-lg">即将会议</div>
+                        <a onclick="switchPage('page-activity')" class="text-blue-600 text-sm">全部活动 →</a>
+                    </div>
+                    <div class="card p-4">
+                        <div class="flex justify-between">
+                            <div>
+                                <div class="text-base font-medium">2026春季校友座谈会</div>
+                                <div class="text-sm text-gray-500 mt-1">2026.04.15 14:00 · 学校报告厅</div>
+                                <div class="flex items-center gap-2 mt-3">
+                                    <div class="px-3 py-1 bg-green-100 text-green-700 text-xs rounded-full">已报名 45/120</div>
+                                </div>
+                            </div>
+                            <button onclick="goToSignIn()" 
+                                    class="bg-[#1E88E5] text-white px-8 rounded-2xl text-sm font-medium shadow-sm">
+                                立即签到
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 快速入口 -->
+                <div class="mb-8">
+                    <div class="text-lg font-semibold mb-3 px-1">快速入口</div>
+                    <div class="grid grid-cols-4 gap-4">
+                        <div onclick="goToSignIn()" class="flex flex-col items-center">
+                            <div class="w-14 h-14 bg-blue-100 rounded-2xl flex items-center justify-center text-3xl mb-1">📍</div>
+                            <div class="text-xs text-center">会议签到</div>
+                        </div>
+                        <div onclick="switchPage('page-alumni')" class="flex flex-col items-center">
+                            <div class="w-14 h-14 bg-orange-100 rounded-2xl flex items-center justify-center text-3xl mb-1">👥</div>
+                            <div class="text-xs text-center">校友管理</div>
+                        </div>
+                        <div onclick="switchPage('page-record')" class="flex flex-col items-center">
+                            <div class="w-14 h-14 bg-purple-100 rounded-2xl flex items-center justify-center text-3xl mb-1">📝</div>
+                            <div class="text-xs text-center">会议记录</div>
+                        </div>
+                        <div onclick="alert('已跳转发布活动～')" class="flex flex-col items-center">
+                            <div class="w-14 h-14 bg-green-100 rounded-2xl flex items-center justify-center text-3xl mb-1">📅</div>
+                            <div class="text-xs text-center">发布活动</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 最近动态 -->
+                <div>
+                    <div class="flex justify-between px-1 mb-3">
+                        <div class="font-semibold text-lg">最近动态</div>
+                    </div>
+                    <div class="space-y-3">
+                        <div class="card p-4 flex gap-3">
+                            <div class="text-3xl">📸</div>
+                            <div class="flex-1">
+                                <div class="text-sm font-medium">2025秋季校友聚会照片已上传</div>
+                                <div class="text-xs text-gray-500">张伟 · 3小时前</div>
+                            </div>
+                        </div>
+                        <div class="card p-4 flex gap-3">
+                            <div class="text-3xl">🎤</div>
+                            <div class="flex-1">
+                                <div class="text-sm font-medium">王教授分享：AI时代下的校友创业</div>
+                                <div class="text-xs text-gray-500">校友会 · 昨天</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ==================== 校友管理页 ==================== -->
+            <div id="page-alumni" class="page hidden p-4">
+                <div class="flex justify-between items-center mb-4">
+                    <h2 class="text-xl font-semibold">校友管理</h2>
+                    <button onclick="alert('管理员已开启新增模式')" class="bg-[#1E88E5] text-white px-5 py-2 rounded-2xl text-sm">+ 新增校友</button>
+                </div>
+                
+                <!-- 搜索 -->
+                <div class="bg-white rounded-3xl px-4 py-3 flex items-center gap-2 border border-gray-200 mb-4">
+                    <span class="text-xl">🔍</span>
+                    <input type="text" id="search-input" 
+                           class="flex-1 bg-transparent outline-none text-base placeholder-gray-400"
+                           placeholder="搜索校友姓名 / 届别 / 城市" onkeyup="if(event.keyCode===13) filterAlumni()">
+                </div>
+
+                <!-- 筛选 -->
+                <div class="flex gap-2 mb-6 overflow-x-auto pb-2">
+                    <div onclick="this.classList.toggle('bg-[#1E88E5]');this.classList.toggle('text-white')" 
+                         class="px-6 py-2 bg-white rounded-3xl text-sm whitespace-nowrap shadow-sm">全部校友</div>
+                    <div onclick="this.classList.toggle('bg-[#1E88E5]');this.classList.toggle('text-white')" 
+                         class="px-6 py-2 bg-white rounded-3xl text-sm whitespace-nowrap shadow-sm">2008届</div>
+                    <div onclick="this.classList.toggle('bg-[#1E88E5]');this.classList.toggle('text-white')" 
+                         class="px-6 py-2 bg-white rounded-3xl text-sm whitespace-nowrap shadow-sm">活跃校友</div>
+                    <div onclick="this.classList.toggle('bg-[#1E88E5]');this.classList.toggle('text-white')" 
+                         class="px-6 py-2 bg-white rounded-3xl text-sm whitespace-nowrap shadow-sm">北京</div>
+                </div>
+
+                <!-- 校友列表 -->
+                <div class="space-y-3" id="alumni-list">
+                    <div class="card p-4 flex items-center gap-4">
+                        <div class="w-12 h-12 bg-gray-200 rounded-2xl flex-shrink-0 overflow-hidden">
+                            <img src="https://picsum.photos/id/64/64/64" class="w-full h-full object-cover">
+                        </div>
+                        <div class="flex-1">
+                            <div class="flex justify-between">
+                                <div>
+                                    <span class="font-medium">张伟</span>
+                                    <span class="ml-2 text-xs bg-blue-100 text-blue-600 px-2 py-0.5 rounded">2008届</span>
+                                </div>
+                                <span class="text-green-500 text-xs">已认证</span>
+                            </div>
+                            <div class="text-sm text-gray-500">计算机科学与技术 · 现居北京</div>
+                        </div>
+                        <button onclick="viewAlumniDetail(this)" class="text-[#1E88E5] text-sm">详情</button>
+                    </div>
+                    <!-- 更多校友可自行复制上面 div -->
+                    <div class="card p-4 flex items-center gap-4">
+                        <div class="w-12 h-12 bg-gray-200 rounded-2xl flex-shrink-0 overflow-hidden">
+                            <img src="https://picsum.photos/id/1005/64/64" class="w-full h-full object-cover">
+                        </div>
+                        <div class="flex-1">
+                            <div class="flex justify-between">
+                                <div>
+                                    <span class="font-medium">李娜</span>
+                                    <span class="ml-2 text-xs bg-blue-100 text-blue-600 px-2 py-0.5 rounded">2015届</span>
+                                </div>
+                                <span class="text-green-500 text-xs">已认证</span>
+                            </div>
+                            <div class="text-sm text-gray-500">金融学 · 现居上海</div>
+                        </div>
+                        <button onclick="viewAlumniDetail(this)" class="text-[#1E88E5] text-sm">详情</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ==================== 活动页 ==================== -->
+            <div id="page-activity" class="page hidden p-4">
+                <h2 class="text-xl font-semibold mb-4">校友活动</h2>
+                
+                <div class="flex bg-gray-100 rounded-3xl p-1 mb-6">
+                    <div onclick="toggleActivityTab(this)" data-tab="upcoming" class="flex-1 text-center py-3 rounded-3xl font-medium bg-white shadow-sm">即将举行</div>
+                    <div onclick="toggleActivityTab(this)" data-tab="past" class="flex-1 text-center py-3 rounded-3xl font-medium">历史记录</div>
+                </div>
+
+                <!-- 即将举行 -->
+                <div id="upcoming-list">
+                    <div class="card p-4 mb-4">
+                        <div class="flex justify-between items-start">
+                            <div>
+                                <div class="font-semibold">2026春季校友座谈会</div>
+                                <div class="text-sm text-gray-500">2026.04.15 14:00　学校报告厅</div>
+                                <div class="mt-3 text-xs flex items-center gap-4">
+                                    <span>👥 已签到 <span class="font-semibold text-green-600">45</span>/120</span>
+                                </div>
+                            </div>
+                            <button onclick="goToSignIn()" class="bg-[#1E88E5] text-white px-6 py-2 rounded-2xl text-sm">立即签到</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 历史记录（默认隐藏） -->
+                <div id="past-list" class="hidden">
+                    <div onclick="switchPage('page-record')" class="card p-4 mb-4 cursor-pointer">
+                        <div class="flex justify-between items-start">
+                            <div>
+                                <div class="font-semibold">2025秋季校友座谈会</div>
+                                <div class="text-sm text-gray-500">2025.10.20 13:30　圆满结束</div>
+                                <div class="text-xs text-gray-400 mt-2">120人参会 · 纪要已发布</div>
+                            </div>
+                            <div class="text-[#1E88E5] text-sm">查看记录 →</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ==================== 会议签到页 ==================== -->
+            <div id="page-signin" class="page hidden p-4">
+                <div class="bg-[#1E88E5] text-white p-6 -mx-4 -mt-4 mb-6 rounded-b-3xl">
+                    <h2 class="text-2xl font-bold mb-1">2026春季校友座谈会</h2>
+                    <div class="flex justify-between text-sm opacity-90">
+                        <div>2026.04.15 14:00</div>
+                        <div>学校报告厅</div>
+                    </div>
+                </div>
+
+                <div class="text-center">
+                    <div class="mx-auto w-64 h-64 bg-white border-8 border-gray-200 rounded-3xl flex items-center justify-center text-[180px] shadow-inner">📱</div>
+                    <p class="text-xl font-medium mt-6">扫一扫签到</p>
+                    <p class="text-sm text-gray-500 mt-1">或点击下方手动签到</p>
+                    
+                    <button onclick="signInSuccess()" 
+                            class="mt-8 w-full bg-green-500 text-white py-4 rounded-3xl text-lg font-medium flex items-center justify-center gap-2">
+                        <span>✅</span> 我已到达现场（手动签到）
+                    </button>
+                    
+                    <div class="mt-8 text-xs text-gray-400">已签到 45 人</div>
+                    <div class="flex justify-center gap-1 mt-3">
+                        <div class="w-8 h-8 bg-blue-100 rounded-2xl overflow-hidden"><img src="https://picsum.photos/id/64/64/64" class="w-full h-full object-cover"></div>
+                        <div class="w-8 h-8 bg-blue-100 rounded-2xl overflow-hidden"><img src="https://picsum.photos/id/1005/64/64" class="w-full h-full object-cover"></div>
+                        <div class="w-8 h-8 bg-blue-100 rounded-2xl overflow-hidden"><img src="https://picsum.photos/id/201/64/64" class="w-full h-full object-cover"></div>
+                        <div class="text-sm text-gray-400 flex items-center">+42</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ==================== 会议记录页 ==================== -->
+            <div id="page-record" class="page hidden p-4">
+                <div class="flex items-center justify-between mb-6">
+                    <div>
+                        <div class="text-2xl font-bold">2025秋季校友座谈会</div>
+                        <div class="text-sm text-gray-500">2025.10.20　120人参会</div>
+                    </div>
+                    <button onclick="switchPage('page-activity')" class="text-gray-400">← 返回</button>
+                </div>
+
+                <div class="flex gap-1 bg-gray-100 p-1 rounded-3xl mb-6">
+                    <div onclick="this.classList.add('bg-white','shadow-sm');document.getElementById('record-tab1').classList.remove('hidden');document.getElementById('record-tab2').classList.add('hidden')" 
+                         class="flex-1 text-center py-3 rounded-3xl font-medium bg-white shadow-sm">会议纪要</div>
+                    <div onclick="this.classList.add('bg-white','shadow-sm');document.getElementById('record-tab2').classList.remove('hidden');document.getElementById('record-tab1').classList.add('hidden')" 
+                         class="flex-1 text-center py-3 rounded-3xl font-medium">参会人员</div>
+                </div>
+
+                <!-- 纪要 -->
+                <div id="record-tab1" class="card p-6">
+                    <h4 class="font-semibold mb-4">会议纪要</h4>
+                    <ul class="space-y-4 text-sm">
+                        <li class="flex gap-3"><span class="text-green-600">✓</span> 讨论了校友基金2026年度使用计划</li>
+                        <li class="flex gap-3"><span class="text-green-600">✓</span> 通过了“校友导师计划”提案</li>
+                        <li class="flex gap-3"><span class="text-green-600">✓</span> 下次活动定于2026年4月</li>
+                    </ul>
+                </div>
+
+                <!-- 参会人员 -->
+                <div id="record-tab2" class="card p-6 hidden">
+                    <div class="grid grid-cols-4 gap-4">
+                        <div class="text-center"><div class="mx-auto w-14 h-14 rounded-2xl overflow-hidden mb-1"><img src="https://picsum.photos/id/64/64/64" class="w-full"></div><div class="text-xs">张伟</div></div>
+                        <div class="text-center"><div class="mx-auto w-14 h-14 rounded-2xl overflow-hidden mb-1"><img src="https://picsum.photos/id/1005/64/64" class="w-full"></div><div class="text-xs">李娜</div></div>
+                        <!-- 更多可复制 -->
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 底部 TabBar -->
+        <div class="tab-bar">
+            <div onclick="switchPage('page-home')" class="tab-item active">
+                <div class="text-2xl mb-px">🏠</div>
+                首页
+            </div>
+            <div onclick="switchPage('page-activity')" class="tab-item">
+                <div class="text-2xl mb-px">📅</div>
+                活动
+            </div>
+            <div onclick="switchPage('page-alumni')" class="tab-item">
+                <div class="text-2xl mb-px">👥</div>
+                校友
+            </div>
+            <div onclick="alert('我的页面（可放个人资料、我的活动、设置等）')" class="tab-item">
+                <div class="text-2xl mb-px">👤</div>
+                我的
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Tailwind 初始化
+        function initTailwind() {
+            // 无需额外配置，已在 style 中定义主色
+        }
+
+        // 切换页面
+        function switchPage(pageId) {
+            document.querySelectorAll('.page').forEach(page => page.classList.add('hidden'))
+            document.getElementById(pageId).classList.remove('hidden')
+            
+            // 高亮 TabBar
+            document.querySelectorAll('.tab-item').forEach(tab => tab.classList.remove('active'))
+            const activeTab = Array.from(document.querySelectorAll('.tab-item')).find(tab => 
+                tab.getAttribute('onclick').includes(pageId)
+            )
+            if (activeTab) activeTab.classList.add('active')
+        }
+
+        // 签到成功动画
+        function signInSuccess() {
+            const signinPage = document.getElementById('page-signin')
+            signinPage.innerHTML = `
+                <div class="h-full flex flex-col items-center justify-center bg-gradient-to-b from-green-400 to-emerald-500 text-white">
+                    <div class="text-8xl mb-8 animate-bounce">🎉</div>
+                    <div class="text-3xl font-bold">签到成功！</div>
+                    <div class="text-xl mt-4">欢迎参加本次校友会</div>
+                    <div class="mt-16 text-sm opacity-80">已记录到系统 · 2026.04.15 13:58</div>
+                    <button onclick="switchPage('page-home')" 
+                            class="mt-12 px-10 py-4 bg-white text-emerald-600 rounded-3xl font-semibold">返回首页</button>
+                </div>
+            `
+            setTimeout(() => {
+                alert('✅ 签到成功！（演示效果）')
+                switchPage('page-home')
+            }, 2200)
+        }
+
+        // 跳转到签到页
+        function goToSignIn() {
+            switchPage('page-signin')
+        }
+
+        // 活动 Tab 切换
+        function toggleActivityTab(el) {
+            const isUpcoming = el.dataset.tab === 'upcoming'
+            document.getElementById('upcoming-list').classList.toggle('hidden', !isUpcoming)
+            document.getElementById('past-list').classList.toggle('hidden', isUpcoming)
+            
+            // 高亮当前 Tab
+            document.querySelectorAll('#page-activity > div:first-child > div').forEach(div => {
+                if (div === el) div.classList.add('bg-white', 'shadow-sm')
+                else div.classList.remove('bg-white', 'shadow-sm')
+            })
+        }
+
+        // 简单校友搜索
+        function filterAlumni() {
+            const keyword = document.getElementById('search-input').value.toLowerCase()
+            const list = document.getElementById('alumni-list')
+            const items = list.querySelectorAll('.card')
+            
+            items.forEach(item => {
+                const text = item.textContent.toLowerCase()
+                item.style.display = text.includes(keyword) ? 'flex' : 'none'
+            })
+        }
+
+        // 查看校友详情（演示）
+        function viewAlumniDetail(btn) {
+            alert('已打开校友详情页（真实小程序中会跳转新页面）\n\n姓名：' + btn.parentElement.querySelector('.font-medium').textContent)
+        }
+
+        // 顶部铃铛演示
+        function showNotification() {
+            alert('🔔 2 条新通知\n1. 春季座谈会签到开启\n2. 王教授直播预告')
+        }
+
+        // 启动
+        window.onload = function() {
+            initTailwind()
+            console.log('%c✅ XX大学校友会 小程序 HTML 演示稿 已就绪！\n可直接复制整个代码保存为 .html 文件在浏览器打开', 'color:#1E88E5; font-size:14px')
+        }
+    </script>
+</body>
+</html>

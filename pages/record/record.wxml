@@ -1,0 +1,46 @@
+<view class="container p-4 pb-20">
+  <view class="flex items-center justify-between mb-6">
+    <view>
+      <view class="text-2xl font-bold">2025秋季校友座谈会</view>
+      <view class="text-sm text-gray-500 mt-1">2025.10.20　120人参会</view>
+    </view>
+  </view>
+
+  <view class="flex gap-1 bg-gray-100 p-1 rounded-3xl mb-6" style="border-radius: 24px;">
+    <view class="flex-1 text-center py-3 font-medium {{currentTab === 'summary' ? 'bg-white shadow-sm' : ''}}" style="border-radius: 24px;" bindtap="switchTab" data-tab="summary">会议纪要</view>
+    <view class="flex-1 text-center py-3 font-medium {{currentTab === 'attendees' ? 'bg-white shadow-sm' : ''}}" style="border-radius: 24px;" bindtap="switchTab" data-tab="attendees">参会人员</view>
+  </view>
+
+  <!-- 纪要 -->
+  <view wx:if="{{currentTab === 'summary'}}" class="card p-6">
+    <view class="font-semibold mb-4 text-lg">会议纪要</view>
+    <view class="flex-col gap-4 text-sm">
+      <view class="flex items-center gap-3">
+        <text class="text-green-600 font-bold">✓</text>
+        <text>讨论了校友基金2026年度使用计划</text>
+      </view>
+      <view class="flex items-center gap-3 mt-3">
+        <text class="text-green-600 font-bold">✓</text>
+        <text>通过了“校友导师计划”提案</text>
+      </view>
+      <view class="flex items-center gap-3 mt-3">
+        <text class="text-green-600 font-bold">✓</text>
+        <text>下次活动定于2026年4月</text>
+      </view>
+    </view>
+  </view>
+
+  <!-- 参会人员 -->
+  <view wx:if="{{currentTab === 'attendees'}}" class="card p-6">
+    <view class="grid-4">
+      <view class="flex flex-col items-center">
+        <image class="avatar-lg mb-1" src="https://picsum.photos/id/64/64/64"></image>
+        <text class="text-xs">张伟</text>
+      </view>
+      <view class="flex flex-col items-center">
+        <image class="avatar-lg mb-1" src="https://picsum.photos/id/1005/64/64"></image>
+        <text class="text-xs">李娜</text>
+      </view>
+    </view>
+  </view>
+</view>

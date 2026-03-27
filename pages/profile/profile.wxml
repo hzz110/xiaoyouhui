@@ -1,0 +1,50 @@
+<view class="container p-4 pb-20">
+  <!-- 用户信息 -->
+  <view class="flex items-center gap-4 mb-4 mt-2 p-5 card">
+    <image class="avatar-lg" src="https://picsum.photos/id/64/64/64"></image>
+    <view>
+      <view class="text-xl font-bold">李校友</view>
+      <view class="text-sm text-gray-500 mt-1">2015届 · 计算机科学与技术</view>
+    </view>
+  </view>
+
+  <!-- 选项列表 -->
+  <view class="card px-2 py-0">
+    <view class="py-4 border-b flex justify-between items-center" bindtap="adminTip">
+      <text class="text-base font-medium">后台管理 (仅管理员)</text>
+      <text class="text-gray-400">></text>
+    </view>
+    <view class="py-4 border-b flex justify-between items-center">
+      <text class="text-base font-medium">我的活动</text>
+      <text class="text-gray-400">></text>
+    </view>
+    <view class="py-4 border-b flex justify-between items-center">
+      <text class="text-base font-medium">我的认证</text>
+      <text class="text-gray-400">></text>
+    </view>
+    <view class="py-4 flex justify-between items-center">
+      <text class="text-base font-medium">系统设置</text>
+      <text class="text-gray-400">></text>
+    </view>
+  </view>
+</view>
+
+<!-- Bottom Tab Bar -->
+<view class="tab-bar">
+  <navigator url="/pages/index/index" open-type="redirect" class="tab-item">
+    <view class="text-2xl">🏠</view>
+    <text>首页</text>
+  </navigator>
+  <navigator url="/pages/activity/activity" open-type="redirect" class="tab-item">
+    <view class="text-2xl">📅</view>
+    <text>活动</text>
+  </navigator>
+  <navigator url="/pages/alumni/alumni" open-type="redirect" class="tab-item">
+    <view class="text-2xl">👥</view>
+    <text>校友</text>
+  </navigator>
+  <navigator url="/pages/profile/profile" open-type="redirect" class="tab-item active">
+    <view class="text-2xl">👤</view>
+    <text>我的</text>
+  </navigator>
+</view>
