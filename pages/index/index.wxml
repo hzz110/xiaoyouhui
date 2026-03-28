@@ -21,20 +21,24 @@
   <view class="mb-6">
     <view class="flex justify-between items-center mb-3 px-1">
       <text class="font-semibold text-lg">即将会议</text>
-      <navigator url="/pages/activity/activity" class="text-blue-600 text-sm">全部活动 →</navigator>
+      <navigator url="/pages/activity/activity" open-type="redirect" class="text-blue-600 text-sm">全部活动 →</navigator>
     </view>
-    <view class="card p-4">
-      <view class="flex justify-between">
-        <view>
-          <view class="text-base font-medium">2026春季校友座谈会</view>
-          <view class="text-sm text-gray-500 mt-1">2026.04.15 14:00 · 学校报告厅</view>
+    <view class="card p-4" bindtap="goToActivity">
+      <view wx:if="{{loading}}" class="text-center text-gray-400 py-4">飞向云端拉取最新会议...</view>
+      <view wx:if="{{!loading && latestEvent}}" class="flex justify-between items-center">
+        <view class="flex-1 pr-2">
+          <view class="text-base font-medium truncate" style="max-width: 180px;">{{latestEvent.title}}</view>
+          <view class="text-xs text-gray-500 mt-1 truncate">📍 {{latestEvent.location}} · 录入于 {{latestEvent.created_at}}</view>
           <view class="flex items-center gap-2 mt-3">
-            <view class="px-3 py-1 bg-green-100 text-green-700 text-xs rounded-full">已报名 45/120</view>
+            <view class="px-3 py-1 bg-green-100 text-green-700 text-xs rounded-full shadow-sm">D1 数据库已同步</view>
           </view>
         </view>
-        <navigator url="/pages/signin/signin" class="signin-btn">
-          立即签到
+        <navigator url="/pages/signin/signin" class="bg-blue-500 text-white px-4 py-2 rounded-full text-xs font-medium shadow-md">
+          去签到
         </navigator>
+      </view>
+      <view wx:if="{{!loading && !latestEvent}}" class="text-center text-gray-500 py-4">
+        暂无最新会议，快去后台发布吧！
       </view>
     </view>
   </view>
