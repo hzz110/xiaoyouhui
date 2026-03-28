@@ -134,25 +134,59 @@ export default function App() {
   };
 
   // ======================
-  // 微信公众号级富文本底层
+  // 微信公众号级富文本底层 (带画板压缩与手动缩放)
   // ======================
   const execCmd = (cmd, arg=null) => {
     document.execCommand(cmd, false, arg);
     editorRef.current.focus();
   };
 
+  // 1. 自动物理极限压缩引擎
+  const compressImage = (file, maxWidth = 1366, quality = 0.8) => {
+    return new Promise((resolve) => {
+      const reader = new FileReader();
+      reader.readAsDataURL(file);
+      reader.onload = (event) => {
+        const img = new Image();
+        img.src = event.target.result;
+        img.onload = () => {
+          let width = img.width;
+          let height = img.height;
+          // 按比例将巨型原图收缩
+          if (width > maxWidth) {
+             height = Math.round(height * (maxWidth / width));
+             width = maxWidth;
+          }
+          const canvas = document.createElement("canvas");
+          canvas.width = width;
+          canvas.height = height;
+          const ctx = canvas.getContext("2d");
+          ctx.drawImage(img, 0, 0, width, height);
+          
+          // 抽出纯净压缩流，转换为节约几百倍空间的 jpg 格式
+          canvas.toBlob((blob) => {
+            resolve(new File([blob], file.name.replace(/\.[^/.]+$/, ".jpg"), { type: "image/jpeg" }));
+          }, "image/jpeg", quality);
+        };
+      };
+    });
+  };
+
   const handleImageUpload = async (e) => {
-    const file = e.target.files[0];
-    if (!file) return;
+    const originalFile = e.target.files[0];
+    if (!originalFile) return;
     
     // 给 DOM 埋一个暂时的 loading 占位反馈
-    editorRef.current.innerHTML += `<div id="r2-loading" style="color:#2563eb; font-size:0.9rem; margin:15px 0;">[🚀 原图目前正飞奔送往海外 Cloudflare R2 对象存储桶，请稍候...]</div>`;
+    editorRef.current.innerHTML += `<div id="r2-loading" style="color:#2563eb; font-size:0.9rem; margin:15px 0;">[🚀 正在本地启动芯片物理压缩图像，并极速传至云端 R2 节点...]</div>`;
 
     try {
+      // 触发超强压缩：哪怕原图是 10MB 的单反大图，这里也会被秒缩到一百多 KB 左右。
+      const compressedFile = await compressImage(originalFile, 1280, 0.82);
+
       const res = await fetch(`${getBaseUrl()}/api/upload`, {
         method: "POST",
-        headers: { "Content-Type": file.type },
-        body: file
+        headers: { "Content-Type": compressedFile.type },
+        body: compressedFile
       });
       const json = await res.json();
       
@@ -161,16 +195,30 @@ export default function App() {
 
       if (json.status === 'success') {
         const fullUrl = `${getBaseUrl()}${json.url}`;
-        // 成功获取 R2 真实网址！将其作为图片插入编辑器！
-        const imgHtml = `<img src="${fullUrl}" style="width: 100%; max-width: 600px; border-radius: 12px; margin: 20px 0; display: block;" />`;
+        // 渲染出来，并且加上光标提示，指引用户去点击调整它的大小
+        const imgHtml = `<img src="${fullUrl}" style="width: 100%; max-width: 100%; border-radius: 12px; margin: 20px auto; display: block; cursor: nwse-resize; outline: 3px solid transparent; transition: all 0.2s;" title="👉点击我可以自由缩放大小！" onmouseover="this.style.outline='3px dashed #3b82f6'" onmouseout="this.style.outline='3px solid transparent'" />`;
         execCmd("insertHTML", imgHtml);
       } else {
         alert("原图存储上传失败: " + json.message);
       }
     } catch (error) {
       alert("上传网络超时崩溃");
+      const loadingEl = document.getElementById("r2-loading");
+      if(loadingEl) loadingEl.remove();
     } finally {
       e.target.value = ""; // 清空选中释放内存
+    }
+  };
+
+  // 2. 拦截全职画布点击事件，赋能手动点击缩小/放大照片
+  const handleEditorClick = (e) => {
+    if (e.target.tagName === 'IMG') {
+      const currentWidth = e.target.style.width || "100%";
+      const currentVal = parseInt(currentWidth.replace("%", ""));
+      const input = window.prompt("📏 请调整图片显示宽度比例大小（最大100%，比如填 50 就是缩小到一半大）：", currentVal);
+      if (input && !isNaN(input) && input > 0 && input <= 100) {
+        e.target.style.width = input + "%";
+      }
     }
   };
 
@@ -342,7 +390,7 @@ export default function App() {
               <div className="modal-overlay" onClick={() => setShowModal(false)}>
                 <div className="modal-content" style={{maxWidth: activeTab === 'records' ? '850px' : '480px'}} onClick={e => e.stopPropagation()}>
                   <h2 style={{ marginBottom: '1.5rem', color: 'var(--primary-hover)' }}>
-                    {editingItem ? '二次订错修改 ' : '全新下发指令 '}{activeTab === 'alumni' ? '实名制校友' : activeTab === 'events' ? '线下集会大盘' : '微信级长篇报告'}
+                    {editingItem ? '二次订错修改 ' : '全新下发指令 '}{activeTab === 'alumni' ? '实名制校友' : activeTab === 'events' ? '线下集会日历' : '微信级长篇报告'}
                   </h2>
                   <form onSubmit={handleSubmit}>
                     
@@ -376,8 +424,8 @@ export default function App() {
                           <input type="text" name="location" defaultValue={editingItem?.location || ''} required className="input-field" placeholder="例如：交大犀浦第一报告厅" />
                         </div>
                         <div className="form-group">
-                          <label className="form-label">高层流转速记</label>
-                          <textarea name="content" defaultValue={editingItem?.content || ''} className="input-field" style={{ minHeight: '120px', resize: 'vertical' }} placeholder="预留内部讨论或安排..."></textarea>
+                          <label className="form-label">高层流转速记（纯文本摘要）</label>
+                          <textarea name="content" defaultValue={editingItem?.content || ''} className="input-field" style={{ minHeight: '120px', resize: 'vertical' }} placeholder="预留内部讨论或安排简要纪实..."></textarea>
                         </div>
                       </>
                     )}
@@ -406,12 +454,13 @@ export default function App() {
                             <input type="file" ref={fileInputRef} onChange={handleImageUpload} accept="image/*" style={{ display: 'none' }} />
                           </div>
 
-                          {/* 画板本身 */}
+                          {/* 画板本身：监听 onClick 拦截图片调整属性 */}
                           <div 
                             ref={editorRef}
                             className="editor-canvas content-body"
                             contentEditable="true"
-                            placeholder="在这里像在微信公众号写公众号一样书写您的记录！可以直接插入精美大排版插图！"
+                            onClick={handleEditorClick}
+                            placeholder="在这里像在微信公众号写公众号一样书写您的记录！可以直接插入精美大排版插图，鼠标点一下图片可以修改它的大小！"
                           ></div>
                         </div>
                       </>
@@ -420,7 +469,7 @@ export default function App() {
                     <div style={{ display: 'flex', gap: '1rem', marginTop: '2.5rem' }}>
                       <button type="button" className="btn" style={{ flex: 1, background: 'var(--bg-color)', color: 'var(--text-main)', boxShadow: 'none' }} onClick={() => setShowModal(false)}>取消操作</button>
                       <button type="submit" className="btn" style={{ flex: 2, justifyContent: 'center' }} disabled={submitting}>
-                        {submitting ? 'R2 与 D1 全面交互握手中...' : (editingItem ? '覆盖重写存档' : '发布进全球终端')}
+                        {submitting ? 'R2 与 D1 全面交互握手中...' : (editingItem ? '覆盖保存修改' : '发布进全球终端')}
                       </button>
                     </div>
                   </form>
