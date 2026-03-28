@@ -70,12 +70,24 @@ export default {
         
         } else if (req.method === "POST") {
           const body = await req.json();
-          const keys = Object.keys(body);
-          const values = Object.values(body);
-          const placeholders = keys.map(() => "?").join(", ");
-          await env.DB.prepare(`INSERT INTO ${tableName} (${keys.join(", ")}) VALUES (${placeholders})`)
-            .bind(...values).run();
-          return new Response(JSON.stringify({ status: "success" }), { headers });
+          if (Array.isArray(body)) {
+             const statements = body.map(item => {
+                const keys = Object.keys(item);
+                const values = Object.values(item);
+                const placeholders = keys.map(() => "?").join(", ");
+                return env.DB.prepare(`INSERT INTO ${tableName} (${keys.join(", ")}) VALUES (${placeholders})`).bind(...values);
+             });
+             // Cloudflare D1 原生并发原子操作，万行数据秒级落盘
+             await env.DB.batch(statements);
+             return new Response(JSON.stringify({ status: "success", count: body.length }), { headers });
+          } else {
+             const keys = Object.keys(body);
+             const values = Object.values(body);
+             const placeholders = keys.map(() => "?").join(", ");
+             await env.DB.prepare(`INSERT INTO ${tableName} (${keys.join(", ")}) VALUES (${placeholders})`)
+               .bind(...values).run();
+             return new Response(JSON.stringify({ status: "success" }), { headers });
+          }
           
         } else if (req.method === "PUT" && idParam) {
           const body = await req.json();

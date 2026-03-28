@@ -1,5 +1,6 @@
 // src/App.jsx
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
+import * as XLSX from 'xlsx';
 import '@wangeditor/editor/dist/css/style.css'; // 引入 css
 import { Editor, Toolbar } from '@wangeditor/editor-for-react';
 
@@ -19,6 +20,61 @@ export default function App() {
   const [editor, setEditor] = useState(null); // 存储 editor 实例
   const [htmlContent, setHtmlContent] = useState(''); // 绑定富文本 HTML
   const [recordTitle, setRecordTitle] = useState("");
+
+  const fileInputRefExcel = useRef(null);
+
+  // 【核心黑科技】解析本地 Excel 并打包向后端全速宣发
+  const handleExcelImport = (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    setLoading(true);
+    const reader = new FileReader();
+    reader.onload = async (evt) => {
+      try {
+        const bstr = evt.target.result;
+        const wb = XLSX.read(bstr, { type: 'binary' });
+        const ws = wb.Sheets[wb.SheetNames[0]];
+        const rawData = XLSX.utils.sheet_to_json(ws, { header: 1 });
+        
+        // 切除表头第一行，并执行映射
+        const payload = rawData.slice(1).map(row => ({
+          name: row[0]?.toString().trim() || '未具名',
+          batch: row[1]?.toString().trim() || '未知届别',
+          major: row[2]?.toString().trim() || ''
+        })).filter(item => item.name !== '未具名' && item.batch !== '未知届别'); // 滤除空行
+        
+        if (payload.length === 0) {
+          alert("Excel文件没有有效数据！请确保第1列是姓名，第2列是届别，第3列是专业。");
+          setLoading(false); return;
+        }
+
+        if (!window.confirm(`解析雷达已将表单破译完毕，成功锁定 ${payload.length} 位校友的坐标方位。\n\n是否准允向边缘云并发全量导入请求？`)) {
+          setLoading(false); return;
+        }
+
+        const res = await fetch(`${getBaseUrl()}/api/alumni`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload)
+        });
+        
+        const json = await res.json();
+        if (json.status === 'success') {
+          alert(`🎉 D1 数据库批量汇入成功！极速写入了 ${payload.length} 条实名记录档案。`);
+          fetchData('alumni');
+        } else {
+          alert("数据库汇入遭拒: " + json.message);
+        }
+      } catch (err) {
+        console.error(err);
+        alert("Excel内部量子核心损坏，无法解析此结构文件\n" + err.message);
+      } finally {
+        setLoading(false);
+        e.target.value = ""; // 重置内存空间释放
+      }
+    };
+    reader.readAsBinaryString(file);
+  };
 
   // 及时销毁 editor
   useEffect(() => {
@@ -286,9 +342,20 @@ export default function App() {
                 <h1>{getPageTitle()}</h1>
                 <p className="caption">{getPageCaption()}</p>
               </div>
-              <button className="btn shadow-md" style={{ transform: 'none' }} onClick={handleCreateClick}>
-                + 新增{activeTab === 'alumni' ? '录入' : activeTab === 'events' ? '活动' : '长篇记录'}
-              </button>
+              <div style={{ display: 'flex', gap: '10px' }}>
+                {activeTab === 'alumni' && (
+                  <>
+                    {/* 隐藏的文件黑洞捕捉器 */}
+                    <input type="file" ref={fileInputRefExcel} onChange={handleExcelImport} accept=".xlsx, .xls" style={{ display: 'none' }} />
+                    <button className="btn shadow-md" style={{ transform: 'none', background: '#10b981', color: 'white', border: 'none' }} onClick={() => fileInputRefExcel.current?.click()}>
+                      📥 批量导入 Excel
+                    </button>
+                  </>
+                )}
+                <button className="btn shadow-md" style={{ transform: 'none' }} onClick={handleCreateClick}>
+                  + 新增{activeTab === 'alumni' ? '录入' : activeTab === 'events' ? '活动' : '长篇记录'}
+                </button>
+              </div>
             </div>
 
             <div className="card" style={{ padding: 0, overflow: 'hidden' }}>
