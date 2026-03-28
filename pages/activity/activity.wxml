@@ -2,39 +2,42 @@
   <view class="text-xl font-semibold mb-4">校友活动</view>
   
   <!-- Tabs -->
-  <view class="flex bg-gray-100 rounded-3xl p-1 mb-6" style="border-radius: 24px;">
-    <view class="flex-1 text-center py-3 font-medium {{currentTab === 'upcoming' ? 'bg-white shadow-sm' : ''}}" style="border-radius:24px;" bindtap="switchTab" data-tab="upcoming">即将举行</view>
+  <view class="flex bg-gray-100 p-1 mb-6" style="border-radius: 24px;">
+    <view class="flex-1 text-center py-3 font-medium {{currentTab === 'upcoming' ? 'bg-white shadow-sm' : ''}}" style="border-radius:24px;" bindtap="switchTab" data-tab="upcoming">远端活动库</view>
     <view class="flex-1 text-center py-3 font-medium {{currentTab === 'past' ? 'bg-white shadow-sm' : ''}}" style="border-radius:24px;" bindtap="switchTab" data-tab="past">历史记录</view>
   </view>
 
-  <!-- 即将举行 -->
-  <view wx:if="{{currentTab === 'upcoming'}}">
-    <view class="card p-4 mb-4">
-      <view class="flex justify-between items-start">
-        <view>
-          <view class="font-semibold text-base">2026春季校友座谈会</view>
-          <view class="text-sm text-gray-500 mt-1">2026.04.15 14:00　学校报告厅</view>
-          <view class="mt-3 text-xs flex items-center gap-4">
-            <text>👥 已签到 <text class="font-semibold text-green-600">45</text>/120</text>
+  <view wx:if="{{loading}}" class="text-center py-10 text-gray-500">
+    飞向云端数据库获取活动中...
+  </view>
+
+  <!-- 远端真实活动 -->
+  <view wx:if="{{currentTab === 'upcoming' && !loading}}">
+    <block wx:for="{{eventsList}}" wx:key="id">
+      <view class="card p-4 mb-4">
+        <view class="flex justify-between items-start">
+          <view>
+            <view class="font-semibold text-base" style="width: 200px; white-space: pre-wrap;">{{item.title}}</view>
+            <view class="text-sm text-blue-600 mt-1">📍 {{item.location}}</view>
+            <view class="text-xs text-gray-500 mt-1" style="width: 200px;">{{item.content}}</view>
+            <view class="mt-3 text-xs flex items-center gap-4 text-gray-400">
+              <text>录入时间: {{item.created_at}}</text>
+            </view>
           </view>
+          <navigator url="/pages/signin/signin" class="bg-blue-600 text-white px-5 py-2 rounded-full text-xs">去签到</navigator>
         </view>
-        <navigator url="/pages/signin/signin" class="bg-blue-600 text-white px-6 py-2 rounded-full text-sm">立即签到</navigator>
       </view>
+    </block>
+
+    <view wx:if="{{eventsList.length === 0}}" class="text-center text-gray-500 py-8">
+      当前查询不到任何未来活动。
     </view>
   </view>
 
-  <!-- 历史记录 -->
-  <view wx:if="{{currentTab === 'past'}}">
-    <navigator url="/pages/record/record" class="card p-4 mb-4">
-      <view class="flex justify-between items-start">
-        <view>
-          <view class="font-semibold text-base">2025秋季校友座谈会</view>
-          <view class="text-sm text-gray-500 mt-1">2025.10.20 13:30　圆满结束</view>
-          <view class="text-xs text-gray-400 mt-2">120人参会 · 纪要已发布</view>
-        </view>
-        <view class="text-blue-600 text-sm">查看记录 →</view>
-      </view>
-    </navigator>
+  <view wx:if="{{currentTab === 'past' && !loading}}">
+    <view class="text-center text-gray-500 py-8">
+      暂未公开历史归档哦！
+    </view>
   </view>
 
 </view>
@@ -57,4 +60,4 @@
     <view class="text-2xl">👤</view>
     <text>我的</text>
   </navigator>
-</view>
+</view
