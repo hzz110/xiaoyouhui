@@ -1,5 +1,7 @@
 // src/App.jsx
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect } from 'react';
+import '@wangeditor/editor/dist/css/style.css'; // 引入 css
+import { Editor, Toolbar } from '@wangeditor/editor-for-react';
 
 export default function App() {
   const [activeTab, setActiveTab] = useState('alumni'); // alumni | events | records
@@ -8,16 +10,26 @@ export default function App() {
   const [apiUrl, setApiUrl] = useState(localStorage.getItem('api_url') || '');
   const [showConfig, setShowConfig] = useState(!localStorage.getItem('api_url'));
   
-  // 新增/编辑模态框
+  // 新增/编辑模态框全局状态
   const [showModal, setShowModal] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [editingItem, setEditingItem] = useState(null); // 为 null 则是新增，否则是编辑操作
 
-  // 微信公众号风格的富文本编辑器控制钩子
-  const editorRef = useRef(null);
-  const fileInputRef = useRef(null);
+  // WangEditor 专属状态管理
+  const [editor, setEditor] = useState(null); // 存储 editor 实例
+  const [htmlContent, setHtmlContent] = useState(''); // 绑定富文本 HTML
   const [recordTitle, setRecordTitle] = useState("");
 
+  // 及时销毁 editor
+  useEffect(() => {
+    return () => {
+      if (editor == null) return;
+      editor.destroy();
+      setEditor(null);
+    };
+  }, [editor]);
+
+  // 从后端边缘节点拉取真数据
   useEffect(() => {
     if (apiUrl && !showConfig) {
       fetchData(activeTab);
@@ -57,14 +69,13 @@ export default function App() {
   };
 
   // ======================
-  // 删改交互大厅
+  // 删改交互通用大厅
   // ======================
-  
   const handleCreateClick = () => {
     setEditingItem(null);
     if (activeTab === 'records') {
       setRecordTitle("");
-      if (editorRef.current) editorRef.current.innerHTML = "";
+      setHtmlContent("");
     }
     setShowModal(true);
   };
@@ -73,10 +84,7 @@ export default function App() {
     setEditingItem(item);
     if (activeTab === 'records') {
       setRecordTitle(item.title);
-      // Wait for modal dom to mount before injecting html
-      setTimeout(() => {
-        if (editorRef.current) editorRef.current.innerHTML = item.html_content || '';
-      }, 50);
+      setHtmlContent(item.html_content || '');
     }
     setShowModal(true);
   };
@@ -102,10 +110,11 @@ export default function App() {
     
     let payload = {};
     if (activeTab === 'records') {
-       if (!recordTitle || !editorRef.current.innerHTML) { 
-         alert("公众号标题和正文均不能为空！"); setSubmitting(false); return; 
+       // 防御性拦截空白内容 (富文本空标签情况)
+       if (!recordTitle || !htmlContent || htmlContent === '<p><br></p>') { 
+         alert("公众号标题和正文均不可为空！"); setSubmitting(false); return; 
        }
-       payload = { title: recordTitle, html_content: editorRef.current.innerHTML };
+       payload = { title: recordTitle, html_content: htmlContent };
     } else {
        const fd = new FormData(e.target);
        payload = Object.fromEntries(fd.entries());
@@ -134,14 +143,8 @@ export default function App() {
   };
 
   // ======================
-  // 微信公众号级富文本底层 (带画板压缩与手动缩放)
+  // 王级 (WangEditor) 富文本引擎及极限压缩劫持底层
   // ======================
-  const execCmd = (cmd, arg=null) => {
-    document.execCommand(cmd, false, arg);
-    editorRef.current.focus();
-  };
-
-  // 1. 自动物理极限压缩引擎
   const compressImage = (file, maxWidth = 1366, quality = 0.8) => {
     return new Promise((resolve) => {
       const reader = new FileReader();
@@ -172,55 +175,36 @@ export default function App() {
     });
   };
 
-  const handleImageUpload = async (e) => {
-    const originalFile = e.target.files[0];
-    if (!originalFile) return;
-    
-    // 给 DOM 埋一个暂时的 loading 占位反馈
-    editorRef.current.innerHTML += `<div id="r2-loading" style="color:#2563eb; font-size:0.9rem; margin:15px 0;">[🚀 正在本地启动芯片物理压缩图像，并极速传至云端 R2 节点...]</div>`;
-
-    try {
-      // 触发超强压缩：哪怕原图是 10MB 的单反大图，这里也会被秒缩到一百多 KB 左右。
-      const compressedFile = await compressImage(originalFile, 1280, 0.82);
-
-      const res = await fetch(`${getBaseUrl()}/api/upload`, {
-        method: "POST",
-        headers: { "Content-Type": compressedFile.type },
-        body: compressedFile
-      });
-      const json = await res.json();
-      
-      const loadingEl = document.getElementById("r2-loading");
-      if(loadingEl) loadingEl.remove();
-
-      if (json.status === 'success') {
-        const fullUrl = `${getBaseUrl()}${json.url}`;
-        // 渲染出来，并且加上光标提示，指引用户去双击调整它的大小
-        const imgHtml = `<img src="${fullUrl}" style="width: 100%; max-width: 100%; border-radius: 12px; margin: 20px auto; display: block; cursor: nwse-resize; outline: 3px solid transparent; transition: all 0.2s;" title="👉连按我两下（双击）即可自由缩放大小！" onmouseover="this.style.outline='3px dashed #3b82f6'" onmouseout="this.style.outline='3px solid transparent'" />`;
-        execCmd("insertHTML", imgHtml);
-      } else {
-        alert("原图存储上传失败: " + json.message);
+  const toolbarConfig = { };
+  const editorConfig = {
+    placeholder: '欢迎来到国内顶级的 WangEditor 可视化专区！您可以像公众号一样尽情挥洒笔墨并插入完美原图。',
+    MENU_CONF: {
+      uploadImage: {
+         // 自定义劫持上传核心逻辑：极速压缩 -> 对接 Cloudflare R2
+         async customUpload(file, insertFn) {
+            try {
+               // 触发超强压缩：哪怕原图是 10MB 的单反大图，这里也会被秒缩到一百多 KB 左右。
+               const compressedFile = await compressImage(file, 1280, 0.82);
+               
+               const res = await fetch(`${getBaseUrl()}/api/upload`, {
+                 method: "POST",
+                 headers: { "Content-Type": compressedFile.type },
+                 body: compressedFile
+               });
+               const json = await res.json();
+               
+               if(json.status === 'success') {
+                  const fullUrl = `${getBaseUrl()}${json.url}`;
+                  // WangEditor 官方标准的跨洋注图动作
+                  insertFn(fullUrl, '校友会纪实照片', fullUrl); 
+               } else {
+                  alert("R2 节点驳回存储请求: " + json.message);
+               }
+            } catch (err) {
+               alert("跨洋传图在网络层崩塌或超时，请检查节点连通性！");
+            }
+         }
       }
-    } catch (error) {
-      alert("上传网络超时崩溃");
-      const loadingEl = document.getElementById("r2-loading");
-      if(loadingEl) loadingEl.remove();
-    } finally {
-      e.target.value = ""; // 清空选中释放内存
-    }
-  };
-
-  // 2. 拦截全职画布双击事件，避开 Chrome 没用的单击蓝框
-  const handleEditorDoubleClick = (e) => {
-    if (e.target.tagName === 'IMG') {
-      const currentWidth = e.target.style.width || "100%";
-      const currentVal = parseInt(currentWidth.replace("%", ""));
-      const input = window.prompt("📏 请输入这侧插图的宽度比例（最大100%，如若缩小一半就填 50）：", currentVal);
-      if (input && !isNaN(input) && input > 0 && input <= 100) {
-        e.target.style.width = input + "%";
-      }
-      // 抹除极其碍眼的 Chrome 无效单击蓝框
-      window.getSelection().removeAllRanges();
     }
   };
 
@@ -228,13 +212,13 @@ export default function App() {
   const getPageTitle = () => {
     if (activeTab === 'alumni') return '校友实名录大盘';
     if (activeTab === 'events') return '日历与集会排期';
-    return '长篇会议记录档案 (R2架构)';
+    return '长篇会议记录档案 (高级架构)';
   };
 
   const getPageCaption = () => {
     if (activeTab === 'alumni') return '校改每一位实名校友的专业履历以及届别标识。';
     if (activeTab === 'events') return '高调统筹校友会各地的所有线上/线下预定交流事项。';
-    return '类似于公众号原生图文编辑器的记录空间。所有的配图将极速上云分发。';
+    return '配备国民级 WangEditor 重型引擎。所有的配图完美支持任意拐角拖拽，并通过底层极限压缩分发进云端 R2。';
   };
 
   return (
@@ -387,12 +371,12 @@ export default function App() {
               )}
             </div>
 
-            {/* 顶配增删改查表单底层系统 (支持原生图文) */}
+            {/* 顶配增删改查表单底层系统 */}
             {showModal && (
               <div className="modal-overlay" onClick={() => setShowModal(false)}>
-                <div className="modal-content" style={{maxWidth: activeTab === 'records' ? '850px' : '480px'}} onClick={e => e.stopPropagation()}>
+                <div className="modal-content" style={{maxWidth: activeTab === 'records' ? '900px' : '480px'}} onClick={e => e.stopPropagation()}>
                   <h2 style={{ marginBottom: '1.5rem', color: 'var(--primary-hover)' }}>
-                    {editingItem ? '二次订错修改 ' : '全新下发指令 '}{activeTab === 'alumni' ? '实名制校友' : activeTab === 'events' ? '线下集会日历' : '微信级长篇报告'}
+                    {editingItem ? '二次订错修改 ' : '全新下发指令 '}{activeTab === 'alumni' ? '实名制校友' : activeTab === 'events' ? '线下集会日历' : '长篇图文报告'}
                   </h2>
                   <form onSubmit={handleSubmit}>
                     
@@ -432,38 +416,31 @@ export default function App() {
                       </>
                     )}
 
-                    {/* 类似企业公众号图文的霸霸编辑器 */}
+                    {/* WangEditor 巨型重构模块 */}
                     {activeTab === 'records' && (
                       <>
                         <div className="form-group">
                           <label className="form-label">对开长篇核心头条 *</label>
                           <input type="text" value={recordTitle} onChange={e => setRecordTitle(e.target.value)} required className="input-field" style={{fontSize: '1.2rem', fontWeight: 600}} placeholder="输入惊爆校友圈的热门长文章标题！" />
                         </div>
-                        <div className="form-group">
-                          <label className="form-label">沉浸式富媒体图文正文撰写处 (云桥联 R2 架构存储) *</label>
-                          
-                          {/* 底层控制板面板 */}
-                          <div className="editor-toolbar">
-                            <button type="button" className="editor-btn" onClick={() => execCmd('bold')}>B 粗体强调</button>
-                            <button type="button" className="editor-btn" onClick={() => execCmd('italic')}>I 倾斜行文</button>
-                            <button type="button" className="editor-btn" onClick={() => execCmd('formatBlock', 'H2')}>H2 插入章节大字</button>
-                            
-                            {/* R2 极速上传入口 */}
-                            <button type="button" className="editor-btn" style={{ marginLeft: 'auto', background: 'var(--primary)', color: 'white', border: 'none' }} onClick={() => fileInputRef.current?.click()}>
-                              🖼️ 插入 R2 真实电脑原版高画质摄影图
-                            </button>
-                            {/* 看不见的文件捕获网 */}
-                            <input type="file" ref={fileInputRef} onChange={handleImageUpload} accept="image/*" style={{ display: 'none' }} />
+                        <div className="form-group" style={{ zIndex: 100 }}>
+                          <label className="form-label">巨型企业级富媒体撰写处 (WangEditor X Cloudflare R2) *</label>
+                          <div style={{ border: '1px solid #ccc', zIndex: 100, borderRadius: '8px', overflow: 'hidden' }}>
+                            <Toolbar
+                                editor={editor}
+                                defaultConfig={toolbarConfig}
+                                mode="default"
+                                style={{ borderBottom: '1px solid #ccc' }}
+                            />
+                            <Editor
+                                defaultConfig={editorConfig}
+                                value={htmlContent}
+                                onCreated={setEditor}
+                                onChange={editor => setHtmlContent(editor.getHtml())}
+                                mode="default"
+                                style={{ height: '450px', overflowY: 'hidden' }}
+                            />
                           </div>
-
-                          {/* 画板本身：监听 onClick 拦截图片调整属性 */}
-                          <div 
-                            ref={editorRef}
-                            className="editor-canvas content-body"
-                            contentEditable="true"
-                            onDoubleClick={handleEditorDoubleClick}
-                            placeholder="在这里像在微信公众号写公众号一样书写您的记录！可以直接插入精美大排版插图，鼠标【双击图片两下】可以修改它的大小！"
-                          ></div>
                         </div>
                       </>
                     )}
@@ -471,7 +448,7 @@ export default function App() {
                     <div style={{ display: 'flex', gap: '1rem', marginTop: '2.5rem' }}>
                       <button type="button" className="btn" style={{ flex: 1, background: 'var(--bg-color)', color: 'var(--text-main)', boxShadow: 'none' }} onClick={() => setShowModal(false)}>取消操作</button>
                       <button type="submit" className="btn" style={{ flex: 2, justifyContent: 'center' }} disabled={submitting}>
-                        {submitting ? 'R2 与 D1 全面交互握手中...' : (editingItem ? '覆盖保存修改' : '发布进全球终端')}
+                        {submitting ? '顶级架构握手中...' : (editingItem ? '覆盖保存修改' : '发布进全球终端')}
                       </button>
                     </div>
                   </form>
