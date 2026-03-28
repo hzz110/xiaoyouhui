@@ -229,3 +229,30 @@ input:focus { border-color: var(--primary) !important; }
   border-color: var(--primary); 
   box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15); 
 }
+
+/* CMS Editor Engine Styling */
+.editor-toolbar {
+  display: flex; gap: 0.6rem; margin-bottom: 0.2rem; background: var(--bg-color); padding: 0.75rem; border-radius: 12px 12px 0 0; border: 1px solid var(--border); border-bottom: none;
+}
+.editor-btn {
+  background: white; border: 1px solid var(--border); padding: 0.4rem 0.8rem; border-radius: 6px; cursor: pointer; color: var(--text-main); font-weight: 600; font-size: 0.85rem;
+  transition: all 0.2s; box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+}
+.editor-btn:hover { background: #f8fafc; border-color: var(--primary); color: var(--primary); }
+
+.editor-canvas {
+  width: 100%; min-height: 400px; max-height: 550px; overflow-y: auto; padding: 1.5rem; 
+  border: 1px solid var(--border); border-radius: 0 0 12px 12px; background: white; outline: none; 
+  font-size: 1.05rem; line-height: 1.8; color: #333;
+}
+.editor-canvas:empty:before {
+  content: attr(placeholder); color: #9ca3af; 
+}
+.editor-canvas:focus { border-color: var(--primary); }
+
+/* In-Editor Styles to normalize display */
+.content-body h2 { font-size: 1.5rem; color: var(--primary-hover); margin-top: 1.5rem; margin-bottom: 0.75rem; }
+.content-body img { margin: 10px auto; border-radius: 12px; }
+
+.action-btn { background: transparent; border: none; font-size: 1.25rem; cursor: pointer; opacity: 0.6; transition: opacity 0.2s, transform 0.2s; padding: 0.25rem; line-height: 1; }
+.action-btn:hover { opacity: 1; transform: scale(1.2); }

@@ -29,3 +29,11 @@ INSERT OR IGNORE INTO events (title, content, location) VALUES
 ('2026春季校友座谈会', '讨论校友基金2026年度使用计划及校友导师计划。', '学校报告厅'),
 ('2025秋季校友聚会', '秋季线下校友联谊与企业参访。', '成都市高新区'),
 ('AI 时代下的校友创业分享', '邀请知名校友分享人工智能创业经验。', '线上腾讯会议');
+
+-- 会议记录长图文表
+CREATE TABLE IF NOT EXISTS meeting_records (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    title TEXT NOT NULL,
+    html_content TEXT,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
