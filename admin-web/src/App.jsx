@@ -195,8 +195,8 @@ export default function App() {
 
       if (json.status === 'success') {
         const fullUrl = `${getBaseUrl()}${json.url}`;
-        // 渲染出来，并且加上光标提示，指引用户去点击调整它的大小
-        const imgHtml = `<img src="${fullUrl}" style="width: 100%; max-width: 100%; border-radius: 12px; margin: 20px auto; display: block; cursor: nwse-resize; outline: 3px solid transparent; transition: all 0.2s;" title="👉点击我可以自由缩放大小！" onmouseover="this.style.outline='3px dashed #3b82f6'" onmouseout="this.style.outline='3px solid transparent'" />`;
+        // 渲染出来，并且加上光标提示，指引用户去双击调整它的大小
+        const imgHtml = `<img src="${fullUrl}" style="width: 100%; max-width: 100%; border-radius: 12px; margin: 20px auto; display: block; cursor: nwse-resize; outline: 3px solid transparent; transition: all 0.2s;" title="👉连按我两下（双击）即可自由缩放大小！" onmouseover="this.style.outline='3px dashed #3b82f6'" onmouseout="this.style.outline='3px solid transparent'" />`;
         execCmd("insertHTML", imgHtml);
       } else {
         alert("原图存储上传失败: " + json.message);
@@ -210,15 +210,17 @@ export default function App() {
     }
   };
 
-  // 2. 拦截全职画布点击事件，赋能手动点击缩小/放大照片
-  const handleEditorClick = (e) => {
+  // 2. 拦截全职画布双击事件，避开 Chrome 没用的单击蓝框
+  const handleEditorDoubleClick = (e) => {
     if (e.target.tagName === 'IMG') {
       const currentWidth = e.target.style.width || "100%";
       const currentVal = parseInt(currentWidth.replace("%", ""));
-      const input = window.prompt("📏 请调整图片显示宽度比例大小（最大100%，比如填 50 就是缩小到一半大）：", currentVal);
+      const input = window.prompt("📏 请输入这侧插图的宽度比例（最大100%，如若缩小一半就填 50）：", currentVal);
       if (input && !isNaN(input) && input > 0 && input <= 100) {
         e.target.style.width = input + "%";
       }
+      // 抹除极其碍眼的 Chrome 无效单击蓝框
+      window.getSelection().removeAllRanges();
     }
   };
 
@@ -459,8 +461,8 @@ export default function App() {
                             ref={editorRef}
                             className="editor-canvas content-body"
                             contentEditable="true"
-                            onClick={handleEditorClick}
-                            placeholder="在这里像在微信公众号写公众号一样书写您的记录！可以直接插入精美大排版插图，鼠标点一下图片可以修改它的大小！"
+                            onDoubleClick={handleEditorDoubleClick}
+                            placeholder="在这里像在微信公众号写公众号一样书写您的记录！可以直接插入精美大排版插图，鼠标【双击图片两下】可以修改它的大小！"
                           ></div>
                         </div>
                       </>
