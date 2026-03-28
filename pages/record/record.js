@@ -19,7 +19,11 @@ Page({
         method: 'GET',
         success: (res) => {
           if(res.data && res.data.status === 'success') {
-             this.setData({ records: res.data.data });
+             const processedRecords = res.data.data.map(item => ({
+               ...item,
+               plain_content: (item.html_content || '').replace(/<[^>]+>/g, '').trim()
+             }));
+             this.setData({ records: processedRecords });
           }
           this.setData({ loading: false });
           resolve();
