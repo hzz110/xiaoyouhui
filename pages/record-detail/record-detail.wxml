@@ -1,0 +1,37 @@
+<!--pages/record-detail/record-detail.wxml-->
+<view class="container bg-white min-h-screen p-5">
+  <view wx:if="{{loading}}" class="text-center py-20 text-gray-400 flex flex-col items-center">
+    <view class="mb-3 text-2xl">⏳</view>
+    <view>正在解析长篇富媒体排版流...</view>
+  </view>
+  
+  <block wx:if="{{!loading && article}}">
+    <!-- 文章霸气标题 -->
+    <view class="text-2xl font-black text-gray-900 mb-4 tracking-tight" style="line-height:1.45;">{{article.title}}</view>
+    
+    <!-- 属性 Meta 签名信息 (浓厚公众号质感) -->
+    <view class="text-sm text-gray-500 mb-6 flex gap-3 border-b border-gray-100 pb-5 items-center">
+      <text class="text-blue-600 font-medium">西南交大校友会</text>
+      <text>{{article.created_at}}</text>
+      <text class="bg-gray-100 text-gray-500 px-2 py-0.5 rounded text-xs ml-auto">原创深度</text>
+    </view>
+
+    <!-- 微信核心武器库：Rich Text 无缝映射 -->
+    <!-- 这里的字体大小、文字颜色、行高都调到人眼最舒适的 16px 和 1.7 的间距 -->
+    <view class="rich-text-wrapper text-gray-800" style="font-size: 16.5px; line-height: 1.8; letter-spacing: 0.5px;">
+      <rich-text nodes="{{htmlContent}}"></rich-text>
+    </view>
+    
+    <!-- 底部留白边界 -->
+    <view class="mt-12 mb-10 text-center text-xs text-gray-300 flex items-center justify-center gap-2">
+      <view class="h-px w-10 bg-gray-200"></view>
+      <text>The End</text>
+      <view class="h-px w-10 bg-gray-200"></view>
+    </view>
+  </block>
+
+  <view wx:if="{{!loading && !article}}" class="text-center py-20 text-red-400">
+    <view class="mb-2 text-2xl">⚠️</view>
+    <view>抱歉，该报告档可能已被后台抹除或下架。</view>
+  </view>
+</view>

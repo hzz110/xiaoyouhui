@@ -1,3 +1,5 @@
 {
-  "navigationBarTitleText": "会议记录"
+  "navigationBarTitleText": "会议纪要全库",
+  "enablePullDownRefresh": true,
+  "backgroundColor": "#f3f4f6"
 }

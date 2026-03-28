@@ -4,6 +4,7 @@
     "pages/activity/activity",
     "pages/alumni/alumni",
     "pages/record/record",
+    "pages/record-detail/record-detail",
     "pages/signin/signin",
     "pages/profile/profile"
   ],
